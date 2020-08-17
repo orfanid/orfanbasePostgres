@@ -2,6 +2,7 @@ package com.orfangenes.repo.ws.service;
 
 
 import com.orfangenes.repo.entity.Analysis;
+import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
 import com.orfangenes.repo.ws.exception.AnalysisNotFoundException;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.repository.AnalysisRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +29,22 @@ public class AnalysisService {
 
     public List<Analysis> findAllAnalysiss() {
         return analysisRepository.findAll();
+    }
+
+    public List<AnalysisResultsTableRaw> findAllAnalysissForTable() {
+        List<AnalysisResultsTableRaw> analysisResultsTableRaws = new ArrayList<>();
+
+        analysisRepository.findAll().forEach(analysis -> {
+            analysisResultsTableRaws.add(
+                    new AnalysisResultsTableRaw(
+                        analysis.getAnalysisId(),
+                        analysis.getAnalysisDate(),
+                        analysis.getOrganism(),
+                        analysis.getUser().getEmail(),
+                        analysis.getGeneList().size())
+            );
+        });
+        return analysisResultsTableRaws;
     }
 
     public Analysis getAnalysis(long analysisId){

@@ -1,6 +1,7 @@
 package com.orfangenes.repo.ws.Controller;
 
 import com.orfangenes.repo.entity.User;
+import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
 import com.orfangenes.repo.ws.dto.GeneSummary;
 import com.orfangenes.repo.ws.dto.ORFanGenes;
 import com.orfangenes.repo.ws.dto.SummaryChart;
@@ -46,6 +47,12 @@ public class AnalysisController {
     public @ResponseBody
     List<Analysis> all(){
         return  analysisService.findAllAnalysiss();
+    }
+
+    @GetMapping("/analyses/table")
+    public @ResponseBody
+    List<AnalysisResultsTableRaw> findAllAnalysissForTable(){
+        return  analysisService.findAllAnalysissForTable();
     }
 
     @GetMapping("/analysis/{id}")
