@@ -1,9 +1,16 @@
-spring:  
-  jpa:  
-    hibernate:  
-      ddl-auto: create  
-    database-platform: org.hibernate.dialect.PostgreSQLDialect  
-  datasource:  
-    url: "jdbc:postgresql://localhost:5432/orfanbase"
+spring.application.name: ORFanbaseDB
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+    properties.hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/orfanbase
     username: postgres
     password: root
