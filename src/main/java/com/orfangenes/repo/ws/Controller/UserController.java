@@ -1,17 +1,14 @@
 package com.orfangenes.repo.ws.Controller;
 
-import com.orfangenes.repo.entity.User;
+import com.orfangenes.repo.ws.entity.User;
 import com.orfangenes.repo.ws.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * @author Suresh Hewapathirana
@@ -33,13 +30,15 @@ public class UserController {
     }
 
     @GetMapping("/user/{id}")
-    public EntityModel<User> one(@PathVariable Long id) {
+    public User one(@PathVariable Long id) {
         User user = userService.getUser(id);
-        EntityModel<User> resource=new EntityModel<>(user);
-        resource.add(
-                linkTo(methodOn(this.getClass()).one(id)).withSelfRel(),
-                linkTo(methodOn(this.getClass()).all()).withRel("users"));
-        return resource;
+        return user;
+    }
+
+    @GetMapping("/user")
+    public User getUserByEmail(@RequestParam(value="email") String email) {
+        User user = userService.getUserByEmail(email);
+        return user;
     }
 
     @PostMapping("/user")

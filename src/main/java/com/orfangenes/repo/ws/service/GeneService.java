@@ -1,6 +1,6 @@
 package com.orfangenes.repo.ws.service;
 
-import com.orfangenes.repo.entity.Gene;
+import com.orfangenes.repo.ws.entity.Gene;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.exception.GeneNotFoundException;
 import com.orfangenes.repo.ws.repository.GeneRepository;

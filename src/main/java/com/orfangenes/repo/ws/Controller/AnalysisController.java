@@ -1,19 +1,15 @@
 package com.orfangenes.repo.ws.Controller;
 
-import com.orfangenes.repo.entity.User;
-import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
-import com.orfangenes.repo.ws.dto.GeneSummary;
-import com.orfangenes.repo.ws.dto.ORFanGenes;
-import com.orfangenes.repo.ws.dto.SummaryChart;
-import com.orfangenes.repo.entity.Analysis;
-import com.orfangenes.repo.entity.Gene;
+import com.orfangenes.repo.ws.entity.User;
+import com.orfangenes.repo.ws.dto.*;
+import com.orfangenes.repo.ws.entity.Analysis;
+import com.orfangenes.repo.ws.entity.Gene;
 import com.orfangenes.repo.ws.service.AnalysisService;
 import com.orfangenes.repo.ws.service.UserService;
 import com.orfangenes.repo.ws.util.Constants;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +19,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 /**
  * @author Suresh Hewapathirana
  */
@@ -49,24 +41,27 @@ public class AnalysisController {
         return  analysisService.findAllAnalysiss();
     }
 
-    @GetMapping("/analyses/table")
+    @GetMapping("/analyses/all-analysis-table")
     public @ResponseBody
     List<AnalysisResultsTableRaw> findAllAnalysissForTable(){
         return  analysisService.findAllAnalysissForTable();
     }
 
     @GetMapping("/analysis/{id}")
-    public EntityModel<Analysis> one(@PathVariable @Valid Long id) {
+    public Analysis one(@PathVariable @Valid Long id) {
         Analysis analysis = analysisService.getAnalysis(id);
-        EntityModel<Analysis> resource=new EntityModel<>(analysis);
-        resource.add(
-                linkTo(methodOn(this.getClass()).one(id)).withSelfRel(),
-                linkTo(methodOn(this.getClass()).all()).withRel("analyses"));
-        return resource;
+       return  analysis;
+    }
+
+    @GetMapping("/analysis")
+    public Analysis getAnalysisByAnalysisId(@RequestParam(value="analysisId") String analysisId) {
+        Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);
+        return analysis;
     }
 
     @PostMapping("/analysis")
     public Analysis save(@Valid @RequestBody Analysis analysis) {
+        System.out.println(analysis.toString());
         return analysisService.saveAnalysis(analysis);
     }
 
@@ -91,7 +86,7 @@ public class AnalysisController {
     @GetMapping("/data/summary/{analysisId}")
     public List<GeneSummary> getSummary(@PathVariable @Valid String analysisId) {
 
-        Analysis analysis = analysisService.getAnalysisById(analysisId);
+        Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);
         List<Gene> genes = analysis.getGeneList();
 
         List<String> orfanLevels = genes.stream().map(Gene::getOrfanLevel).collect(Collectors.toList());
@@ -114,7 +109,7 @@ public class AnalysisController {
 
         List<ORFanGenes> ORFanGeneList = new ArrayList<>();
 
-        Analysis analysis = analysisService.getAnalysisById(analysisId);
+        Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);
         List<Gene> genes = analysis.getGeneList();
 
         for (Gene gene:genes) {
@@ -131,7 +126,7 @@ public class AnalysisController {
     @GetMapping("/data/blastresults/{analysisId}")
     public String getblastResults(@PathVariable @Valid String analysisId) {
 
-        Analysis analysis = analysisService.getAnalysisById(analysisId);
+        Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);
         return analysis.getBlastResults();
     }
 
@@ -140,10 +135,10 @@ public class AnalysisController {
      * @param analysisId
      * @return
      */
-    @GetMapping("/data/summary/chart/{analysisId}")
+    @GetMapping("/data/summary-chart/{analysisId}")
     public SummaryChart getSummaryChart(@PathVariable @Valid String analysisId) {
 
-        Analysis analysis = analysisService.getAnalysisById(analysisId);
+        Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);
         List<Gene> genes = analysis.getGeneList();
         List<String> orfanLevels = genes.stream().map(Gene::getOrfanLevel).collect(Collectors.toList());
         List<GeneSummary> geneSummaries = new ArrayList<>();
@@ -166,17 +161,40 @@ public class AnalysisController {
         return summaryChart;
     }
 
+    @GetMapping("/orfanbase-table")
+    public @ResponseBody List<Genes> getAnalysedGenes() {
+        List<Genes> genes = new ArrayList<>();
+        List<Analysis> analyses = analysisService.findAllAnalysiss();
+        analyses.forEach(analysis -> {
+            Genes genes1 = new Genes();
+            analysis.getGeneList().forEach(gene -> {
+                genes1.setGeneId(gene.getGeneId());
+                genes1.setDescription(gene.getDescription());
+                genes1.setSequence(gene.getSequence());
+                genes1.setGccontent((gene.getGccontent()));
+                genes1.setLength(gene.getLength());
+                genes1.setOrfanLevel(gene.getOrfanLevel());
+
+            });
+            genes1.setAnalysisDate(analysis.getAnalysisDate());
+            genes1.setOrganism(analysis.getOrganism());
+            genes1.setTaxonomyId(analysis.getTaxonomyId());
+            genes1.setAnalysisId(analysis.getAnalysisId());
+            genes.add(genes1);
+        });
+        return genes;
+    }
+
     @PostMapping("/test")
     public void populateTestData() throws ParseException {
         Random rand = new Random();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
         User user = User.builder()
-                .firstName("Suresh")
-                .lastName("Hewapathirana")
-                .email("sureshhewabi@gmail.com").build();
-        user = userService.saveUser(user);
-
+                .firstName("orfanid")
+                .lastName("orfanid")
+                .email("orfanid@gmail.com").build();
+//
         Gene gene = Gene.builder()
                 .geneId("NP_415100.1")
                 .description("bacteriophage N4 receptor, outer membrane protein [Escherichia coli str. K-12 substr. MG1655]")
@@ -184,21 +202,47 @@ public class AnalysisController {
                 .build();
 
         Analysis analysis = new Analysis();
-        analysis.setAnalysisId("1595716461278_VMO");
+        analysis.setAnalysisId("1595716461278_VMS");
         analysis.setOrganism("Escherichia coli str. K-12 substr. MG1655");
         analysis.setTaxonomyId(562);
-        analysis.setAnalysisDate(simpleDateFormat.parse("22/07/2020"));
+        analysis.setAnalysisDate(simpleDateFormat.parse("31/08/2020"));
         analysis.setSaved(true);
-        analysis.setBlastResults("[{\"tree\":{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"name\":\"Shigella dysenteriae(1)\"},{\"name\":\"Shigella sonnei(1)\"}],\"name\":\"Shigella(2)\"},{\"children\":[{\"name\":\"Escherichia coli B185(1)\"},{\"name\":\"Escherichia coli(1)\"},{\"name\":\"Escherichia coli O43:H14(1)\"},{\"name\":\"Escherichia coli K-12(1)\"}],\"name\":\"Escherichia(4)\"},{\"children\":[{\"name\":\"Enterobacteriaceae bacterium(1)\"}],\"name\":\"(1)\"}],\"name\":\"Enterobacteriaceae(7)\"}],\"name\":\"Enterobacterales(7)\"}],\"name\":\"Gammaproteobacteria(7)\"}],\"name\":\"Proteobacteria(7)\"}],\"name\":\"(7)\"}],\"name\":\"Bacteria(1)\"}],\"name\":\"LUCA(1)\"},\"id\":\"NP_415100.1\"}]\n");
+        analysis.setBlastResults("[{\"tree\":{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"name\":\"Shigella dysenteriae(1)\"},{\"name\":\"Shigella sonnei(1)\"}],\"name\":\"Shigella(2)\"},{\"children\":[{\"name\":\"Escherichia coli B185(1)\"},{\"name\":\"Escherichia coli(1)\"},{\"name\":\"Escherichia coli O43:H14(1)\"},{\"name\":\"Escherichia coli K-12(1)\"}],\"name\":\"Escherichia(4)\"},{\"children\":[{\"name\":\"Enterobacteriaceae bacterium(1)\"}],\"name\":\"(1)\"}],\"name\":\"Enterobacteriaceae(7)\"}],\"name\":\"Enterobacterales(7)\"}],\"name\":\"Gammaproteobacteria(7)\"}],\"name\":\"Proteobacteria(7)\"}],\"name\":\"(7)\"}],\"name\":\"Bacteria(1)\"}],\"name\":\"LUCA(1)\"},\"id\":\"NP_415100.1\"}]\\n");
         analysis.setUser(user);
 
         List<Gene> genes = new ArrayList<>();
-        gene.setGeneParent(analysis);
+        gene.setAnalysis(analysis);
         genes.add(gene);
 
         analysis.setGeneList(genes);
+        analysis.setUser(user);
 
         analysisService.saveAnalysis(analysis);
+
+
+        Gene gene2 = Gene.builder()
+                .geneId("NP_524859.2")
+                .description("male-specific opa containing gene, isoform A [Drosophila melanogaster]")
+                .orfanLevel("Strict ORFan")
+                .build();
+
+        Analysis analysis2 = new Analysis();
+        analysis2.setAnalysisId("1598083731654_WiP");
+        analysis2.setOrganism("Drosophila melanogaster");
+        analysis2.setTaxonomyId(7227);
+        analysis2.setAnalysisDate(simpleDateFormat.parse("30/08/2020"));
+        analysis2.setSaved(true);
+        analysis2.setBlastResults("[{\"tree\":{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"name\":\"Drosophila melanogaster(1)\"},{\"name\":\"Drosophila simulans(1)\"},{\"name\":\"Drosophila mauritiana(1)\"},{\"name\":\"Drosophila sechellia(1)\"}],\"name\":\"Drosophila(4)\"}],\"name\":\"Drosophilidae(4)\"}],\"name\":\"Diptera(4)\"}],\"name\":\"Insecta(4)\"}],\"name\":\"Arthropoda(4)\"}],\"name\":\"Metazoa(4)\"}],\"name\":\"Eukaryota(1)\"}],\"name\":\"LUCA(1)\"},\"id\":\"NP_524859.2\"}]");
+        analysis2.setUser(user);
+
+        List<Gene> genes2 = new ArrayList<>();
+        gene2.setAnalysis(analysis2);
+        genes2.add(gene2);
+
+        analysis2.setGeneList(genes2);
+        analysis2.setUser(user);
+
+        analysisService.saveAnalysis(analysis2);
         System.out.println("Data saved!");
     }
 }

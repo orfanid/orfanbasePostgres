@@ -1,0 +1,28 @@
+version: '3'
+services:
+  orfanbase-api:
+    container_name: orfanbase-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    environment:
+      - DB_SERVER=orfanbase-db
+      - POSTGRES_DB=orfanbase
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=orfanbase
+    depends_on:
+      - orfanbase-db
+    links:
+      - orfanbase-db
+  orfanbase-db:
+    container_name: orfanbase-db
+    image: postgres
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_DB=orfanbase
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=orfanbase
+

@@ -1,7 +1,7 @@
 package com.orfangenes.repo.ws.service;
 
 
-import com.orfangenes.repo.entity.Analysis;
+import com.orfangenes.repo.ws.entity.Analysis;
 import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
 import com.orfangenes.repo.ws.exception.AnalysisNotFoundException;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
@@ -52,9 +52,9 @@ public class AnalysisService {
                 .orElseThrow(() -> new AnalysisNotFoundException(analysisId));
     }
 
-    public Analysis getAnalysisById(String analysisId){
+    public Analysis getAnalysisByAnalysisId(String analysisId){
         Assert.notNull(analysisId, "analysisId cannot be null");
-        return analysisRepository.findByAnalysisId(analysisId)
+        return analysisRepository.findAnalysesByAnalysisId(analysisId)
                 .orElseThrow(() -> new AnalysisNotFoundException(analysisId));
     }
 

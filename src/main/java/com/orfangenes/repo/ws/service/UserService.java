@@ -1,6 +1,6 @@
 package com.orfangenes.repo.ws.service;
 
-import com.orfangenes.repo.entity.User;
+import com.orfangenes.repo.ws.entity.User;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.exception.UserNotFoundException;
 import com.orfangenes.repo.ws.repository.UserRepository;
@@ -55,5 +55,9 @@ public class UserService {
                     repository.delete(user);
                     return ResponseEntity.ok().build();
                 }).orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+    }
+
+    public User getUserByEmail(String email) {
+        return repository.findUserByEmail(email);
     }
 }
