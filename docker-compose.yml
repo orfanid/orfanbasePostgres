@@ -16,6 +16,8 @@ services:
       - orfanbase-db
     links:
       - orfanbase-db
+    networks:
+      - orfanid
   orfanbase-db:
     container_name: orfanbase-db
     image: postgres
@@ -25,4 +27,12 @@ services:
       - POSTGRES_DB=orfanbase
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=orfanbase
-
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - orfanid
+volumes:
+  db-data:
+networks:
+  orfanid:
+    driver: "bridge"
