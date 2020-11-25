@@ -2,6 +2,7 @@ version: '3'
 services:
   orfanbase-api:
     container_name: orfanbase-api
+    image: orfanbase-api
     build:
       context: .
       dockerfile: Dockerfile
