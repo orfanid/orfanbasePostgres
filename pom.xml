@@ -98,22 +98,25 @@
 
     <build>
         <finalName>${jarFinalName}</finalName>
-        <!--<resources>-->
-            <!--&lt;!&ndash; Maven should filter properties files &ndash;&gt;-->
-            <!--<resource>-->
-                <!--<directory>src/main/resources</directory>-->
-                <!--<filtering>true</filtering>-->
-            <!--</resource>-->
-        <!--</resources>-->
-        <!--<testResources>-->
-            <!--<testResource>-->
-                <!--<directory>src/test/resources</directory>-->
-                <!--<filtering>true</filtering>-->
-                <!--<includes>-->
-                    <!--<include>*/*</include>-->
-                <!--</includes>-->
-            <!--</testResource>-->
-        <!--</testResources>-->
+        <resources>
+            <!-- Maven should filter properties files -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                    <includes>
+                        <include>application.yml</include>
+                    </includes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>*/*</include>
+                </includes>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
