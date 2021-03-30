@@ -1,5 +1,6 @@
 package com.orfangenes.repo.ws.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.*;
@@ -32,7 +33,8 @@ public class Analysis extends AuditModel {
     @NotBlank
     @Column(unique = true)
     private String analysisId;
-    @Temporal(TemporalType.TIMESTAMP)
+//    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date analysisDate;
     @NotBlank
     @Size(min = 3, max = 100)

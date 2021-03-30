@@ -1,5 +1,6 @@
 package com.orfangenes.repo.ws.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,5 +23,6 @@ public class Genes {
     private String organism;
     private int taxonomyId;
     private String analysisId;
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date analysisDate;
 }
