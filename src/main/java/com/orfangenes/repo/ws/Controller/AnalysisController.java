@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Validated
 @RequestMapping("/analysis")
 @Slf4j
-@Tag(name="Analysis")
+@CrossOrigin
 public class AnalysisController {
 
     @Autowired
