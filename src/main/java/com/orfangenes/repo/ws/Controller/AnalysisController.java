@@ -7,7 +7,6 @@ import com.orfangenes.repo.ws.entity.Gene;
 import com.orfangenes.repo.ws.service.AnalysisService;
 import com.orfangenes.repo.ws.service.UserService;
 import com.orfangenes.repo.ws.util.Constants;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +56,16 @@ public class AnalysisController {
     public Analysis getAnalysisByAnalysisId(@RequestParam(value="analysisId") String analysisId) {
         Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);
         return analysis;
+    }
+
+    @PostMapping("/pending")
+    public void savePendingAnalysis(@RequestBody Analysis analysis) {
+        analysisService.savePendingAnalysis(analysis);
+    }
+
+    @PostMapping("/update")
+    public Analysis update(@Valid @RequestBody Analysis analysis) {
+        return analysisService.updateByAnalysisId(analysis);
     }
 
     @PostMapping("/analysis")

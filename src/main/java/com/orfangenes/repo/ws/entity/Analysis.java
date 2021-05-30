@@ -2,6 +2,7 @@ package com.orfangenes.repo.ws.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.orfangenes.repo.ws.util.Constants;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.*;
 import org.hibernate.annotations.Type;
@@ -48,6 +49,8 @@ public class Analysis extends AuditModel {
     private int maximumTargetSequences;
     private int identity;
     private String sequenceType;
+    @Enumerated(EnumType.STRING)
+    private Constants.AnalysisStatus status;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")

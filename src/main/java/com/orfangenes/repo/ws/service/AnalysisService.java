@@ -3,10 +3,13 @@ package com.orfangenes.repo.ws.service;
 
 import com.orfangenes.repo.ws.entity.Analysis;
 import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
+import com.orfangenes.repo.ws.entity.Gene;
 import com.orfangenes.repo.ws.exception.AnalysisNotFoundException;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.repository.AnalysisRepository;
+import com.orfangenes.repo.ws.util.Constants;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -84,5 +87,32 @@ public class AnalysisService {
                     analysisRepository.delete(analysis);
                     return ResponseEntity.ok().build();
                 }).orElseThrow(() -> new ResourceNotFoundException("Analysis not found with id " + analysisId));
+    }
+
+    public void savePendingAnalysis(Analysis analysis) {
+        analysis.setStatus(Constants.AnalysisStatus.PENDING);
+        analysisRepository.save(analysis);
+    }
+
+    public Analysis updateByAnalysisId(Analysis analysis) {
+        Analysis savedAnalysis = analysisRepository.findAnalysesByAnalysisId(analysis.getAnalysisId()).orElseThrow(() -> new RuntimeException("No analysis found"));
+        savedAnalysis.setAnalysisId(analysis.getAnalysisId());
+        savedAnalysis.setAnalysisDate(analysis.getAnalysisDate());
+        savedAnalysis.setOrganism(analysis.getOrganism());
+        savedAnalysis.setTaxonomyId(analysis.getTaxonomyId());
+        savedAnalysis.setSaved(analysis.isSaved());
+        savedAnalysis.setBlastResults(analysis.getBlastResults());
+        savedAnalysis.setEvalue(analysis.getEvalue());
+        savedAnalysis.setMaximumTargetSequences(analysis.getMaximumTargetSequences());
+        savedAnalysis.setIdentity(analysis.getIdentity());
+        savedAnalysis.setSequenceType(analysis.getSequenceType());
+        savedAnalysis.getGeneList().clear();
+        savedAnalysis.getGeneList().addAll(analysis.getGeneList());
+        savedAnalysis.setUser(analysis.getUser());
+        savedAnalysis.setStatus(analysis.getStatus());
+        for (Gene gene : savedAnalysis.getGeneList()) {
+            gene.setAnalysis(savedAnalysis);
+        }
+        return analysisRepository.save(savedAnalysis);
     }
 }
