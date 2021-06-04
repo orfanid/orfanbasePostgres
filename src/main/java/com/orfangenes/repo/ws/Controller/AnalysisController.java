@@ -52,6 +52,11 @@ public class AnalysisController {
        return  analysis;
     }
 
+    @GetMapping("/cancel/{analysisId}")
+    public void cancel(@PathVariable @Valid String analysisId) {
+        analysisService.cancel(analysisId);
+    }
+
     @GetMapping("/analysis")
     public Analysis getAnalysisByAnalysisId(@RequestParam(value="analysisId") String analysisId) {
         Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);

@@ -18,6 +18,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Suresh Hewapathirana
@@ -114,5 +115,17 @@ public class AnalysisService {
             gene.setAnalysis(savedAnalysis);
         }
         return analysisRepository.save(savedAnalysis);
+    }
+
+    @Transactional
+    public void cancel(String analysisId) {
+        Analysis analysis = analysisRepository.findAnalysesByAnalysisId(analysisId)
+                .orElseThrow(() -> new ResourceNotFoundException("Analysis not found with id " + analysisId));
+
+        if (analysis.getStatus().equals(Constants.AnalysisStatus.PENDING)) {
+            analysis.setStatus(Constants.AnalysisStatus.CANCELLED);
+        } else {
+            throw new RuntimeException("Can not cancel");
+        }
     }
 }
