@@ -4,6 +4,7 @@ package com.orfangenes.repo.ws.service;
 import com.orfangenes.repo.ws.entity.Analysis;
 import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
 import com.orfangenes.repo.ws.entity.Gene;
+import com.orfangenes.repo.ws.entity.User;
 import com.orfangenes.repo.ws.exception.AnalysisNotFoundException;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.repository.AnalysisRepository;
@@ -31,6 +32,9 @@ public class AnalysisService {
     @Autowired
     private AnalysisRepository analysisRepository;
 
+    @Autowired
+    private UserService userService;
+
     public List<Analysis> findAllAnalysiss() {
         return analysisRepository.findAll();
     }
@@ -39,13 +43,15 @@ public class AnalysisService {
         List<AnalysisResultsTableRaw> analysisResultsTableRaws = new ArrayList<>();
 
         analysisRepository.findAll().forEach(analysis -> {
+            String userEmail = analysis.getUser() == null ? "" : analysis.getUser().getEmail();
             analysisResultsTableRaws.add(
                     new AnalysisResultsTableRaw(
                         analysis.getAnalysisId(),
                         analysis.getAnalysisDate(),
                         analysis.getOrganism(),
-                        analysis.getUser().getEmail(),
-                        analysis.getGeneList().size())
+                        userEmail,
+                        analysis.getGeneList().size(),
+                        analysis.getStatus())
             );
         });
         return analysisResultsTableRaws;
@@ -92,6 +98,12 @@ public class AnalysisService {
 
     public void savePendingAnalysis(Analysis analysis) {
         analysis.setStatus(Constants.AnalysisStatus.PENDING);
+        if (analysis.getUser() != null) {
+            User userByEmail = userService.getUserByEmail(analysis.getUser().getEmail());
+            if (userByEmail != null) {
+                analysis.setUser(userByEmail);
+            }
+        }
         analysisRepository.save(analysis);
     }
 
@@ -109,7 +121,9 @@ public class AnalysisService {
         savedAnalysis.setSequenceType(analysis.getSequenceType());
         savedAnalysis.getGeneList().clear();
         savedAnalysis.getGeneList().addAll(analysis.getGeneList());
-        savedAnalysis.setUser(analysis.getUser());
+        if (analysis.getUser() != null) {
+            savedAnalysis.setUser(analysis.getUser());
+        }
         savedAnalysis.setStatus(analysis.getStatus());
         for (Gene gene : savedAnalysis.getGeneList()) {
             gene.setAnalysis(savedAnalysis);
