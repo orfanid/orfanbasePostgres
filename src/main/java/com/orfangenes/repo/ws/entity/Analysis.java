@@ -35,7 +35,7 @@ public class Analysis extends AuditModel {
     @Column(unique = true)
     private String analysisId;
 //    @Temporal(TemporalType.TIMESTAMP)
-    @JsonFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm")
     private Date analysisDate;
     @NotBlank
     @Size(min = 3, max = 100)
