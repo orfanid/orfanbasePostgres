@@ -180,21 +180,20 @@ public class AnalysisController {
         List<Genes> genes = new ArrayList<>();
         List<Analysis> analyses = analysisService.findAllAnalysiss();
         analyses.forEach(analysis -> {
-            Genes genes1 = new Genes();
             analysis.getGeneList().forEach(gene -> {
+                Genes genes1 = new Genes();
                 genes1.setGeneId(gene.getGeneId());
                 genes1.setDescription(gene.getDescription());
                 genes1.setSequence(gene.getSequence());
                 genes1.setGccontent((gene.getGccontent()));
                 genes1.setLength(gene.getLength());
                 genes1.setOrfanLevel(gene.getOrfanLevel());
-
+                genes1.setAnalysisDate(analysis.getAnalysisDate());
+                genes1.setOrganism(analysis.getOrganism());
+                genes1.setTaxonomyId(analysis.getTaxonomyId());
+                genes1.setAnalysisId(analysis.getAnalysisId());
+                genes.add(genes1);
             });
-            genes1.setAnalysisDate(analysis.getAnalysisDate());
-            genes1.setOrganism(analysis.getOrganism());
-            genes1.setTaxonomyId(analysis.getTaxonomyId());
-            genes1.setAnalysisId(analysis.getAnalysisId());
-            genes.add(genes1);
         });
         return genes;
     }
