@@ -136,7 +136,7 @@ public class AnalysisService {
         Analysis analysis = analysisRepository.findAnalysesByAnalysisId(analysisId)
                 .orElseThrow(() -> new ResourceNotFoundException("Analysis not found with id " + analysisId));
 
-        if (analysis.getStatus().equals(Constants.AnalysisStatus.PENDING)) {
+        if (analysis.getStatus().equals(Constants.AnalysisStatus.PENDING) || analysis.getAnalysisId().equals(Constants.AnalysisStatus.START_PROCESSING)) {
             analysis.setStatus(Constants.AnalysisStatus.CANCELLED);
         } else {
             throw new RuntimeException("Can not cancel");
