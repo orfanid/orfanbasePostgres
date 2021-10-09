@@ -17,7 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -141,5 +145,11 @@ public class AnalysisService {
         } else {
             throw new RuntimeException("Can not cancel");
         }
+    }
+
+    public List<Analysis> getCompletedAnalysisList(LocalDate fromDate, LocalDate toDate) {
+        Date startTime = Date.from(fromDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        Date endTime = Date.from(toDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        return analysisRepository.findByAnalysisDateGreaterThanEqualAndAnalysisDateLessThanAndStatus(startTime, endTime, Constants.AnalysisStatus.COMPLETED);
     }
 }

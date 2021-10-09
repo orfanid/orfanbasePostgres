@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 /**
@@ -38,6 +40,12 @@ public class AnalysisController {
     public @ResponseBody
     List<Analysis> all(){
         return  analysisService.findAllAnalysiss();
+    }
+
+    @GetMapping("/completed/{fromDate}/{toDate}")
+    public List<Analysis> getCompletedAnalusisForDateRange(@PathVariable String fromDate, @PathVariable String toDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return analysisService.getCompletedAnalysisList(LocalDate.parse(fromDate, formatter), LocalDate.parse(toDate, formatter));
     }
 
     @GetMapping("/analyses/all-analysis-table")
