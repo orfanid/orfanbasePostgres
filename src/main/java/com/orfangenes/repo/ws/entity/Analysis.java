@@ -52,7 +52,7 @@ public class Analysis extends AuditModel {
     @Enumerated(EnumType.STRING)
     private Constants.AnalysisStatus status;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "user_id")
     private User user;
 
