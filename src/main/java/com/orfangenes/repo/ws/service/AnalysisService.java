@@ -152,4 +152,10 @@ public class AnalysisService {
         Date endTime = Date.from(toDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         return analysisRepository.findByAnalysisDateGreaterThanEqualAndAnalysisDateLessThanAndStatus(startTime, endTime, Constants.AnalysisStatus.COMPLETED);
     }
+
+    @Transactional
+    public void deleteAnalysisByAnalysisId(String analysisId) {
+        Optional<Analysis> analysesByAnalysisId = analysisRepository.findAnalysesByAnalysisId(analysisId);
+        analysesByAnalysisId.ifPresent(analysis -> analysisRepository.delete(analysis));
+    }
 }

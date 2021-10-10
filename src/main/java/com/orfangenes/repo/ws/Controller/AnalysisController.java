@@ -98,6 +98,11 @@ public class AnalysisController {
         return analysisService.deleteAnalysis(analysisId);
     }
 
+    @DeleteMapping("/delete/{analysisId}")
+    public void delete(@PathVariable @Valid String analysisId) {
+        analysisService.deleteAnalysisByAnalysisId(analysisId);
+    }
+
     // data support endpoints
 
     /**
