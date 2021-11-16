@@ -17,8 +17,7 @@ services:
       - orfanbase-db
     links:
       - orfanbase-db
-    networks:
-      - orfanid
+
   orfanbase-db:
     container_name: orfanbase-db
     image: postgres
@@ -31,10 +30,11 @@ services:
       - TZ=GMT-6
     volumes:
       - db-data:/var/lib/postgresql/data
-    networks:
-      - orfanid
+
 volumes:
   db-data:
 networks:
-  orfanid:
-    driver: "bridge"
+  default:
+    external:
+      name: orfanid
+

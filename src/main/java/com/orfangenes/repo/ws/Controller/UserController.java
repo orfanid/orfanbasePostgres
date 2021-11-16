@@ -16,6 +16,7 @@ import java.util.List;
  */
 @Validated
 @RestController
+@CrossOrigin
 public class UserController {
 
     private final UserService userService;

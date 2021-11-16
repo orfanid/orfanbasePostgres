@@ -2,6 +2,7 @@ package com.orfangenes.repo.ws.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.orfangenes.repo.ws.util.Constants;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.*;
 import org.hibernate.annotations.Type;
@@ -34,7 +35,7 @@ public class Analysis extends AuditModel {
     @Column(unique = true)
     private String analysisId;
 //    @Temporal(TemporalType.TIMESTAMP)
-    @JsonFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm")
     private Date analysisDate;
     @NotBlank
     @Size(min = 3, max = 100)
@@ -48,8 +49,10 @@ public class Analysis extends AuditModel {
     private int maximumTargetSequences;
     private int identity;
     private String sequenceType;
+    @Enumerated(EnumType.STRING)
+    private Constants.AnalysisStatus status;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "user_id")
     private User user;
 

@@ -7,7 +7,6 @@ import com.orfangenes.repo.ws.entity.Gene;
 import com.orfangenes.repo.ws.service.AnalysisService;
 import com.orfangenes.repo.ws.service.UserService;
 import com.orfangenes.repo.ws.util.Constants;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 /**
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @Validated
 @RequestMapping("/analysis")
 @Slf4j
-@Tag(name="Analysis")
+@CrossOrigin
 public class AnalysisController {
 
     @Autowired
@@ -41,6 +42,12 @@ public class AnalysisController {
         return  analysisService.findAllAnalysiss();
     }
 
+    @GetMapping("/completed/{fromDate}/{toDate}")
+    public List<Analysis> getCompletedAnalusisForDateRange(@PathVariable String fromDate, @PathVariable String toDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return analysisService.getCompletedAnalysisList(LocalDate.parse(fromDate, formatter), LocalDate.parse(toDate, formatter));
+    }
+
     @GetMapping("/analyses/all-analysis-table")
     public @ResponseBody
     List<AnalysisResultsTableRaw> findAllAnalysissForTable(){
@@ -53,10 +60,25 @@ public class AnalysisController {
        return  analysis;
     }
 
+    @GetMapping("/cancel/{analysisId}")
+    public void cancel(@PathVariable @Valid String analysisId) {
+        analysisService.cancel(analysisId);
+    }
+
     @GetMapping("/analysis")
     public Analysis getAnalysisByAnalysisId(@RequestParam(value="analysisId") String analysisId) {
         Analysis analysis = analysisService.getAnalysisByAnalysisId(analysisId);
         return analysis;
+    }
+
+    @PostMapping("/pending")
+    public void savePendingAnalysis(@RequestBody Analysis analysis) {
+        analysisService.savePendingAnalysis(analysis);
+    }
+
+    @PostMapping("/update")
+    public Analysis update(@Valid @RequestBody Analysis analysis) {
+        return analysisService.updateByAnalysisId(analysis);
     }
 
     @PostMapping("/analysis")
@@ -74,6 +96,11 @@ public class AnalysisController {
     @DeleteMapping("/analysis/{analysisId}")
     public ResponseEntity<?> delete(@PathVariable @Valid Long analysisId) {
         return analysisService.deleteAnalysis(analysisId);
+    }
+
+    @DeleteMapping("/delete/{analysisId}")
+    public void delete(@PathVariable @Valid String analysisId) {
+        analysisService.deleteAnalysisByAnalysisId(analysisId);
     }
 
     // data support endpoints
@@ -166,21 +193,20 @@ public class AnalysisController {
         List<Genes> genes = new ArrayList<>();
         List<Analysis> analyses = analysisService.findAllAnalysiss();
         analyses.forEach(analysis -> {
-            Genes genes1 = new Genes();
             analysis.getGeneList().forEach(gene -> {
+                Genes genes1 = new Genes();
                 genes1.setGeneId(gene.getGeneId());
                 genes1.setDescription(gene.getDescription());
                 genes1.setSequence(gene.getSequence());
                 genes1.setGccontent((gene.getGccontent()));
                 genes1.setLength(gene.getLength());
                 genes1.setOrfanLevel(gene.getOrfanLevel());
-
+                genes1.setAnalysisDate(analysis.getAnalysisDate());
+                genes1.setOrganism(analysis.getOrganism());
+                genes1.setTaxonomyId(analysis.getTaxonomyId());
+                genes1.setAnalysisId(analysis.getAnalysisId());
+                genes.add(genes1);
             });
-            genes1.setAnalysisDate(analysis.getAnalysisDate());
-            genes1.setOrganism(analysis.getOrganism());
-            genes1.setTaxonomyId(analysis.getTaxonomyId());
-            genes1.setAnalysisId(analysis.getAnalysisId());
-            genes.add(genes1);
         });
         return genes;
     }

@@ -14,6 +14,7 @@ import java.util.List;
  */
 @Validated
 @RestController
+@CrossOrigin
 public class GeneController {
 
     private final GeneService geneService;
