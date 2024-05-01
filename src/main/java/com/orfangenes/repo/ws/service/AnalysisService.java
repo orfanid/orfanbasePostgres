@@ -55,7 +55,8 @@ public class AnalysisService {
                         analysis.getOrganism(),
                         userEmail,
                         analysis.getGeneList().size(),
-                        analysis.getStatus())
+                        analysis.getStatus(),
+                        analysis.getExecutionType())
             );
         });
         return analysisResultsTableRaws;

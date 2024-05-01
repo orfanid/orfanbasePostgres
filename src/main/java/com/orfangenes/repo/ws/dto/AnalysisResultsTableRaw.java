@@ -21,4 +21,5 @@ public class AnalysisResultsTableRaw {
     private String email;
     private int numberOfGenes;
     private Constants.AnalysisStatus status;
+    private String executionType;
 }
