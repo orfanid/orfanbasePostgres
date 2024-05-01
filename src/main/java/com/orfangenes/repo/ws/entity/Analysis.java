@@ -49,6 +49,7 @@ public class Analysis extends AuditModel {
     private int maximumTargetSequences;
     private int identity;
     private String sequenceType;
+    private String executionType;
     @Enumerated(EnumType.STRING)
     private Constants.AnalysisStatus status;
 
