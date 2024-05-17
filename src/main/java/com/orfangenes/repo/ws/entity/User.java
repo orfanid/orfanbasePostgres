@@ -27,7 +27,6 @@ public class User extends AuditModel {
     private String firstName;
     private String lastName;
     @NotNull(message = "Email cannot be null")
-    @Email(message = "Email should be valid")
     @Column(unique = true)
     private String email;
 }
