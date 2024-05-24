@@ -1,8 +1,11 @@
 package com.orfangenes.repo.ws.Controller;
 
+import com.orfangenes.repo.ws.dto.Genes;
+import com.orfangenes.repo.ws.dto.PagedResults;
 import com.orfangenes.repo.ws.entity.Gene;
 import com.orfangenes.repo.ws.service.GeneService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,5 +53,11 @@ public class GeneController {
     @DeleteMapping("/gene/{geneId}")
     public ResponseEntity<?> delete(@PathVariable Long geneId) {
         return geneService.deleteGene(geneId);
+    }
+
+    @GetMapping("/gene/paged")
+    public PagedResults<Genes> paged(@RequestParam(name = "page", defaultValue = "0") String page,
+                                     @RequestParam(name = "size", defaultValue = "10") String size) {
+        return geneService.findGenesPage(Integer.parseInt(page), Integer.parseInt(size));
     }
 }
