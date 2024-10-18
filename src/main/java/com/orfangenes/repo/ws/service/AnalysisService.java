@@ -55,7 +55,7 @@ public class AnalysisService {
             createdAt = Sort.by(Sort.Direction.ASC, "analysisDate");
         }
         Pageable pageable = PageRequest.of(pageNumber, size, createdAt);
-        Page<Analysis> page = analysisRepository.findAll(pageable);
+        Page<Analysis> page = analysisRepository.findByStatusNot(Constants.AnalysisStatus.CANCELLED, pageable);
         List<AnalysisResultsTableRaw> all = page.getContent().stream()
                 .map(analysis -> new AnalysisResultsTableRaw(
                         analysis.getAnalysisId(),
