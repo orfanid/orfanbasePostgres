@@ -1,6 +1,7 @@
 package com.orfangenes.repo.ws.service;
 
 
+import com.orfangenes.repo.ws.dto.PagedAnalysis;
 import com.orfangenes.repo.ws.entity.Analysis;
 import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
 import com.orfangenes.repo.ws.entity.Gene;
@@ -10,15 +11,17 @@ import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.repository.AnalysisRepository;
 import com.orfangenes.repo.ws.util.Constants;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +44,24 @@ public class AnalysisService {
 
     public List<Analysis> findAllAnalysiss() {
         return analysisRepository.findAll();
+    }
+
+    public PagedAnalysis pagedAnalysis(int pageNumber, int size, String sortByDate) {
+        Sort createdAt;
+        if ("desc".equals(sortByDate)) {
+            createdAt = Sort.by(Sort.Direction.DESC, "analysisDate");
+        } else {
+            createdAt = Sort.by(Sort.Direction.ASC, "analysisDate");
+        }
+        Pageable pageable = PageRequest.of(pageNumber, size, createdAt);
+        Page<Analysis> page = analysisRepository.findAll(pageable);
+        List<Analysis> all = page.getContent();
+        return PagedAnalysis.builder()
+                .totalPages(page.getTotalPages())
+                .total(page.getNumberOfElements())
+                .results(all)
+                .build();
+
     }
 
     public List<AnalysisResultsTableRaw> findAllAnalysissForTable() {
@@ -101,6 +122,14 @@ public class AnalysisService {
                 }).orElseThrow(() -> new ResourceNotFoundException("Analysis not found with id " + analysisId));
     }
 
+    public ResponseEntity<?> deleteErrorStatusAnalysis(){
+         analysisRepository.findByStatus(Constants.AnalysisStatus.ERRORED)
+                .forEach(analysis -> {
+                    analysisRepository.delete(analysis);
+                });
+        return ResponseEntity.ok().build();
+    }
+
     public void savePendingAnalysis(Analysis analysis) {
         analysis.setStatus(Constants.AnalysisStatus.PENDING);
         if (analysis.getUser() != null) {
@@ -159,4 +188,5 @@ public class AnalysisService {
         Optional<Analysis> analysesByAnalysisId = analysisRepository.findAnalysesByAnalysisId(analysisId);
         analysesByAnalysisId.ifPresent(analysis -> analysisRepository.delete(analysis));
     }
+
 }

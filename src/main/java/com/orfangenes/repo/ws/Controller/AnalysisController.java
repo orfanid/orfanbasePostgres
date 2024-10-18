@@ -42,6 +42,13 @@ public class AnalysisController {
         return  analysisService.findAllAnalysiss();
     }
 
+    @GetMapping("/paged")
+    public PagedAnalysis paged(@RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "10") int size,
+                      @RequestParam(defaultValue = "desc") String sortByDate) {
+        return analysisService.pagedAnalysis(page, size, sortByDate);
+    }
+
     @GetMapping("/completed/{fromDate}/{toDate}")
     public List<Analysis> getCompletedAnalusisForDateRange(@PathVariable String fromDate, @PathVariable String toDate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -96,6 +103,11 @@ public class AnalysisController {
     @DeleteMapping("/analysis/{analysisId}")
     public ResponseEntity<?> delete(@PathVariable @Valid Long analysisId) {
         return analysisService.deleteAnalysis(analysisId);
+    }
+
+    @DeleteMapping("/analysis/delete/errored")
+    public ResponseEntity<?> deleteErrored() {
+        return analysisService.deleteErrorStatusAnalysis();
     }
 
     @DeleteMapping("/delete/{analysisId}")

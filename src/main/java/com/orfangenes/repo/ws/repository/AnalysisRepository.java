@@ -2,6 +2,7 @@ package com.orfangenes.repo.ws.repository;
 
 import com.orfangenes.repo.ws.entity.Analysis;
 import com.orfangenes.repo.ws.util.Constants;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +19,6 @@ public interface AnalysisRepository extends JpaRepository<Analysis, Long> {
     Optional<Analysis> findAnalysesByAnalysisId(String analysisId);
 
     List<Analysis> findByAnalysisDateGreaterThanEqualAndAnalysisDateLessThanAndStatus(Date startDate, Date endDate, Constants.AnalysisStatus status);
+
+    List<Analysis> findByStatus(Constants.AnalysisStatus status);
 }
