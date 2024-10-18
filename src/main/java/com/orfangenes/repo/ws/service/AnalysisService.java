@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Suresh Hewapathirana
@@ -55,7 +56,16 @@ public class AnalysisService {
         }
         Pageable pageable = PageRequest.of(pageNumber, size, createdAt);
         Page<Analysis> page = analysisRepository.findAll(pageable);
-        List<Analysis> all = page.getContent();
+        List<AnalysisResultsTableRaw> all = page.getContent().stream()
+                .map(analysis -> new AnalysisResultsTableRaw(
+                        analysis.getAnalysisId(),
+                        analysis.getAnalysisDate(),
+                        analysis.getOrganism(),
+                        analysis.getUser() == null ? "" : analysis.getUser().getEmail(),
+                        analysis.getGeneList().size(),
+                        analysis.getStatus(),
+                        analysis.getExecutionType()))
+                .collect(Collectors.toList());
         return PagedAnalysis.builder()
                 .totalPages(page.getTotalPages())
                 .total(page.getNumberOfElements())
