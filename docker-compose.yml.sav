@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - 8081:8081
     environment:
       - DB_SERVER=orfanbase-db
       - POSTGRES_DB=orfanbase
@@ -15,13 +15,14 @@ services:
       - POSTGRES_PASSWORD=orfanbase
     depends_on:
       - orfanbase-db
-    restart: unless-stopped
+    links:
+      - orfanbase-db
 
   orfanbase-db:
     container_name: orfanbase-db
-    image: postgres:14
+    image: postgres
     ports:
-      - "5433:5432"
+      - 5433:5432
     environment:
       - POSTGRES_DB=orfanbase
       - POSTGRES_USER=postgres
@@ -29,12 +30,11 @@ services:
       - TZ=GMT-6
     volumes:
       - db-data:/var/lib/postgresql/data
-    restart: unless-stopped
 
 volumes:
   db-data:
-
 networks:
   default:
     external:
       name: orfanid
+
