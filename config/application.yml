@@ -4,13 +4,13 @@ server:
 spring:
   jpa:
     database: POSTGRESQL
-    show-sql: true
+    show-sql: false
     generate-ddl: true
     hibernate:
       ddl-auto: update
     properties.hibernate:
       dialect: org.hibernate.dialect.PostgreSQLDialect
-      format_sql: true
+      format_sql: false
   datasource:
     platform: postgres
     url: jdbc:postgresql://${DB_SERVER}/${POSTGRES_DB}

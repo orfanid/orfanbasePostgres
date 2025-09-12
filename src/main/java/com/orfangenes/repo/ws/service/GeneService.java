@@ -1,14 +1,20 @@
 package com.orfangenes.repo.ws.service;
 
+import com.orfangenes.repo.ws.dto.Genes;
+import com.orfangenes.repo.ws.dto.PagedResults;
+import com.orfangenes.repo.ws.entity.Analysis;
 import com.orfangenes.repo.ws.entity.Gene;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.exception.GeneNotFoundException;
 import com.orfangenes.repo.ws.repository.GeneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,5 +68,29 @@ public class GeneService {
                     repository.delete(gene);
                     return ResponseEntity.ok().build();
                 }).orElseThrow(() -> new ResourceNotFoundException("Gene not found with id " + geneId));
+    }
+
+    public PagedResults<Genes> findGenesPage(int page, int size) {
+        Page<Gene> all = repository.findAll(PageRequest.of(page, size));
+        PagedResults<Genes> genesPagedResults = new PagedResults<>();
+        genesPagedResults.setTotal(all.getTotalElements());
+        List<Genes> genes = new ArrayList<>();
+        for (Gene gene : all.getContent()) {
+            Analysis analysis = gene.getAnalysis();
+            Genes genes1 = new Genes();
+            genes1.setGeneId(gene.getGeneId());
+            genes1.setDescription(gene.getDescription());
+            genes1.setSequence(gene.getSequence());
+            genes1.setGccontent((gene.getGccontent()));
+            genes1.setLength(gene.getLength());
+            genes1.setOrfanLevel(gene.getOrfanLevel());
+            genes1.setAnalysisDate(analysis.getAnalysisDate());
+            genes1.setOrganism(analysis.getOrganism());
+            genes1.setTaxonomyId(analysis.getTaxonomyId());
+            genes1.setAnalysisId(analysis.getAnalysisId());
+            genes.add(genes1);
+        }
+        genesPagedResults.setData(genes);
+        return genesPagedResults;
     }
 }

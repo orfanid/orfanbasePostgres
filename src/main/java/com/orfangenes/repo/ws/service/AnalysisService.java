@@ -1,20 +1,33 @@
 package com.orfangenes.repo.ws.service;
 
 
+import com.orfangenes.repo.ws.dto.PagedAnalysis;
 import com.orfangenes.repo.ws.entity.Analysis;
 import com.orfangenes.repo.ws.dto.AnalysisResultsTableRaw;
+import com.orfangenes.repo.ws.entity.Gene;
+import com.orfangenes.repo.ws.entity.User;
 import com.orfangenes.repo.ws.exception.AnalysisNotFoundException;
 import com.orfangenes.repo.ws.exception.ResourceNotFoundException;
 import com.orfangenes.repo.ws.repository.AnalysisRepository;
+import com.orfangenes.repo.ws.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Suresh Hewapathirana
@@ -27,21 +40,54 @@ public class AnalysisService {
     @Autowired
     private AnalysisRepository analysisRepository;
 
+    @Autowired
+    private UserService userService;
+
     public List<Analysis> findAllAnalysiss() {
         return analysisRepository.findAll();
+    }
+
+    public PagedAnalysis pagedAnalysis(int pageNumber, int size, String sortByDate) {
+        Sort createdAt;
+        if ("desc".equals(sortByDate)) {
+            createdAt = Sort.by(Sort.Direction.DESC, "analysisDate");
+        } else {
+            createdAt = Sort.by(Sort.Direction.ASC, "analysisDate");
+        }
+        Pageable pageable = PageRequest.of(pageNumber, size, createdAt);
+        Page<Analysis> page = analysisRepository.findByStatusNot(Constants.AnalysisStatus.CANCELLED, pageable);
+        List<AnalysisResultsTableRaw> all = page.getContent().stream()
+                .map(analysis -> new AnalysisResultsTableRaw(
+                        analysis.getAnalysisId(),
+                        analysis.getAnalysisDate(),
+                        analysis.getOrganism(),
+                        analysis.getUser() == null ? "" : analysis.getUser().getEmail(),
+                        analysis.getGeneList().size(),
+                        analysis.getStatus(),
+                        analysis.getExecutionType()))
+                .collect(Collectors.toList());
+        return PagedAnalysis.builder()
+                .totalPages(page.getTotalPages())
+                .total(page.getNumberOfElements())
+                .results(all)
+                .build();
+
     }
 
     public List<AnalysisResultsTableRaw> findAllAnalysissForTable() {
         List<AnalysisResultsTableRaw> analysisResultsTableRaws = new ArrayList<>();
 
         analysisRepository.findAll().forEach(analysis -> {
+            String userEmail = analysis.getUser() == null ? "" : analysis.getUser().getEmail();
             analysisResultsTableRaws.add(
                     new AnalysisResultsTableRaw(
                         analysis.getAnalysisId(),
                         analysis.getAnalysisDate(),
                         analysis.getOrganism(),
-                        analysis.getUser().getEmail(),
-                        analysis.getGeneList().size())
+                        userEmail,
+                        analysis.getGeneList().size(),
+                        analysis.getStatus(),
+                        analysis.getExecutionType())
             );
         });
         return analysisResultsTableRaws;
@@ -85,4 +131,72 @@ public class AnalysisService {
                     return ResponseEntity.ok().build();
                 }).orElseThrow(() -> new ResourceNotFoundException("Analysis not found with id " + analysisId));
     }
+
+    public ResponseEntity<?> deleteErrorStatusAnalysis(){
+         analysisRepository.findByStatus(Constants.AnalysisStatus.ERRORED)
+                .forEach(analysis -> {
+                    analysisRepository.delete(analysis);
+                });
+        return ResponseEntity.ok().build();
+    }
+
+    public void savePendingAnalysis(Analysis analysis) {
+        analysis.setStatus(Constants.AnalysisStatus.PENDING);
+        if (analysis.getUser() != null) {
+            User userByEmail = userService.getUserByEmail(analysis.getUser().getEmail());
+            if (userByEmail != null) {
+                analysis.setUser(userByEmail);
+            }
+        }
+        analysisRepository.save(analysis);
+    }
+
+    public Analysis updateByAnalysisId(Analysis analysis) {
+        Analysis savedAnalysis = analysisRepository.findAnalysesByAnalysisId(analysis.getAnalysisId()).orElseThrow(() -> new RuntimeException("No analysis found"));
+        savedAnalysis.setAnalysisId(analysis.getAnalysisId());
+        savedAnalysis.setAnalysisDate(analysis.getAnalysisDate());
+        savedAnalysis.setOrganism(analysis.getOrganism());
+        savedAnalysis.setTaxonomyId(analysis.getTaxonomyId());
+        savedAnalysis.setSaved(analysis.isSaved());
+        savedAnalysis.setBlastResults(analysis.getBlastResults());
+        savedAnalysis.setEvalue(analysis.getEvalue());
+        savedAnalysis.setMaximumTargetSequences(analysis.getMaximumTargetSequences());
+        savedAnalysis.setIdentity(analysis.getIdentity());
+        savedAnalysis.setSequenceType(analysis.getSequenceType());
+        savedAnalysis.getGeneList().clear();
+        savedAnalysis.getGeneList().addAll(analysis.getGeneList());
+        if (analysis.getUser() != null) {
+            savedAnalysis.setUser(analysis.getUser());
+        }
+        savedAnalysis.setStatus(analysis.getStatus());
+        for (Gene gene : savedAnalysis.getGeneList()) {
+            gene.setAnalysis(savedAnalysis);
+        }
+        return analysisRepository.save(savedAnalysis);
+    }
+
+    @Transactional
+    public void cancel(String analysisId) {
+        Analysis analysis = analysisRepository.findAnalysesByAnalysisId(analysisId)
+                .orElseThrow(() -> new ResourceNotFoundException("Analysis not found with id " + analysisId));
+
+        if (analysis.getStatus().equals(Constants.AnalysisStatus.PENDING) || analysis.getStatus().equals(Constants.AnalysisStatus.START_PROCESSING)) {
+            analysis.setStatus(Constants.AnalysisStatus.CANCELLED);
+        } else {
+            throw new RuntimeException("Can not cancel");
+        }
+    }
+
+    public List<Analysis> getCompletedAnalysisList(LocalDate fromDate, LocalDate toDate) {
+        Date startTime = Date.from(fromDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        Date endTime = Date.from(toDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        return analysisRepository.findByAnalysisDateGreaterThanEqualAndAnalysisDateLessThanAndStatus(startTime, endTime, Constants.AnalysisStatus.COMPLETED);
+    }
+
+    @Transactional
+    public void deleteAnalysisByAnalysisId(String analysisId) {
+        Optional<Analysis> analysesByAnalysisId = analysisRepository.findAnalysesByAnalysisId(analysisId);
+        analysesByAnalysisId.ifPresent(analysis -> analysisRepository.delete(analysis));
+    }
+
 }

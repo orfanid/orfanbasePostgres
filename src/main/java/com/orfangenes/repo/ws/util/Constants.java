@@ -29,5 +29,9 @@ public class Constants {
         }
     }
 
+    public enum AnalysisStatus {
+        PENDING, COMPLETED, ERRORED, START_PROCESSING, CANCELLED
+    }
+
 }
 
