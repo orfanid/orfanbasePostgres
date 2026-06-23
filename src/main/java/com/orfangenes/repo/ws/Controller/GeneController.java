@@ -57,7 +57,8 @@ public class GeneController {
 
     @GetMapping("/gene/paged")
     public PagedResults<Genes> paged(@RequestParam(name = "page", defaultValue = "0") String page,
-                                     @RequestParam(name = "size", defaultValue = "10") String size) {
-        return geneService.findGenesPage(Integer.parseInt(page), Integer.parseInt(size));
+                                     @RequestParam(name = "size", defaultValue = "10") String size,
+                                     @RequestParam(name = "sortByDate", defaultValue = "desc") String sortByDate) {
+        return geneService.findGenesPage(Integer.parseInt(page), Integer.parseInt(size), sortByDate);
     }
 }

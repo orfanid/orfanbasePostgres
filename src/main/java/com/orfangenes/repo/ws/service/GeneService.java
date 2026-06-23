@@ -10,6 +10,7 @@ import com.orfangenes.repo.ws.repository.GeneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,8 +71,8 @@ public class GeneService {
                 }).orElseThrow(() -> new ResourceNotFoundException("Gene not found with id " + geneId));
     }
 
-    public PagedResults<Genes> findGenesPage(int page, int size) {
-        Page<Gene> all = repository.findAll(PageRequest.of(page, size));
+    public PagedResults<Genes> findGenesPage(int page, int size, String sortByDate) {
+        Page<Gene> all = repository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortByDate), "analysis.analysisDate")));
         PagedResults<Genes> genesPagedResults = new PagedResults<>();
         genesPagedResults.setTotal(all.getTotalElements());
         List<Genes> genes = new ArrayList<>();
